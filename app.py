@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from textblob import TextBlob
 
 # --- Configuração ---
 app = Flask(__name__)
@@ -15,12 +16,19 @@ class Note(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+    # Nova coluna para o score de sentimento
+    sentiment_score = db.Column(db.Float, default=0.0) 
 
     def __repr__(self):
         return f'<Note {self.id}>'
 
-# --- Rotas da Aplicação ---
+# --- Funções Auxiliares ---
+def get_sentiment(text):
+    """Calcula a polaridade (sentimento) de um texto."""
+    analysis = TextBlob(text)
+    return analysis.sentiment.polarity
 
+# --- Rotas da Aplicação ---
 @app.route('/')
 def home():
     notes = Note.query.order_by(Note.date_created.desc()).all()
@@ -31,7 +39,11 @@ def add_note():
     if request.method == 'POST':
         note_title = request.form['title']
         note_content = request.form['content']
-        new_note = Note(title=note_title, content=note_content)
+        
+        # 🤖 AQUI É ONDE A MÁGICA ACONTECE 🤖
+        sentiment_score = get_sentiment(note_content)
+        
+        new_note = Note(title=note_title, content=note_content, sentiment_score=sentiment_score)
         db.session.add(new_note)
         db.session.commit()
         return redirect(url_for('home'))
@@ -43,6 +55,10 @@ def edit_note(note_id):
     if request.method == 'POST':
         note.title = request.form['title']
         note.content = request.form['content']
+        
+        # 🤖 AQUI É ONDE A MÁGICA ACONTECE 🤖
+        note.sentiment_score = get_sentiment(note.content)
+
         db.session.commit()
         return redirect(url_for('home'))
     return render_template('add_note.html', note=note)
@@ -57,5 +73,7 @@ def delete_note(note_id):
 # --- Inicialização ---
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all() # Cria as tabelas do banco de dados
+        # Drop and create all tables to reflect the new column
+        db.drop_all() 
+        db.create_all()
     app.run(debug=True)
