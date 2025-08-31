@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Bloco de Notas Inteligente
 
 Um projeto de bloco de notas simples, construído com Flask e SQLite, que permite a criação, visualização, edição e exclusão de anotações. A estrutura do projeto foi pensada para ser escalável e receber futuras funcionalidades de processamento de texto, como análise de sentimento ou resumo de notas.
@@ -28,3 +29,5 @@ Certifique-se de ter o Python 3.8 ou superior instalado.
 ```bash
 git clone [https://github.com/BrunoWt10/bloco-de-notas-inteligente.git](https://github.com/BrunoWt10/bloco-de-notas-inteligente.git)
 cd bloco-de-notas-inteligente
+=======
+
